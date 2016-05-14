@@ -1,6 +1,6 @@
 {
-"num_buckets":2,
-"round_time":10,
+"num_buckets":5,
+"round_time":30,
 "verbose":5,
 "log_file":"server.log",
 "address":"",
