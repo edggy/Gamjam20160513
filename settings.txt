@@ -1,0 +1,8 @@
+{
+"num_buckets":2,
+"round_time":10,
+"verbose":5,
+"log_file":"server.log",
+"address":"",
+"port":11111
+}
