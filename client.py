@@ -4,6 +4,7 @@ import time
 import socket
 import threading
 
+# requires curses, you can get it at http://www.lfd.uci.edu/~gohlke/pythonlibs/#curses
 import curses
 
 class Player:
@@ -65,18 +66,20 @@ class Player:
 	
 	def __str__(self):
 		ret = ''
-		ret += 'Tickets:\t%s\t\tTime Left:\t%s\n' % (self.tickets, self.time)
+		ret += 'Tickets:\t%d\t\tTime Left:\t%d\n' % (self.tickets, self.time)
 		for n in range(self.numBuckets):
-			ret += '%s\t' % n
+			ret += '%d\t' % n
+		ret += '\n'
 		for n in range(self.numBuckets):
 			if n in self.buckets:
-				ret += '%s\t' % self.buckets[n]
+				ret += '%d\t' % self.buckets[n]
 			#else:
 				#self.server.send('bucket:%s' % n)
 				#ret += '??\t'
+		ret += '\n'
 		for n in range(self.numBuckets):
 			if n in self.myBuckets:
-				ret += '%s\t' % self.myBuckets[n]
+				ret += '%d\t' % self.myBuckets[n]
 			else:
 				ret += '0\t'   
 		return ret
@@ -168,7 +171,7 @@ class Player:
 				self.lastCheck = curTime
 			if window is None:
 				if self.change:
-					#os.system('cls')
+					os.system('cls')
 					print self
 					self.change = False
 			else:
