@@ -1,6 +1,7 @@
 {
 "num_buckets":5,
 "round_time":30,
+"starting_tickets":100,
 "verbose":5,
 "log_file":"server.log",
 "address":"",
