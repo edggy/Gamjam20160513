@@ -4,19 +4,17 @@ import time
 import socket
 import threading
 
-# requires curses, you can get it at http://www.lfd.uci.edu/~gohlke/pythonlibs/#curses
-import curses
-
 class Player:
 	def __init__(self):
 		try:
-			server_info = (sys.argv[1], int(sys.argv[2]))
+			server_info = (socket.gethostbyname(sys.argv[1]), int(sys.argv[2]))
 		except:
+			server_info = (socket.gethostbyname(raw_input('Server: ')), int(raw_input('Port: ')))
 			# How did you mess this up?
-			print "Usage:\n%s [ip] [port]" % sys.argv[0]
-			raw_input("Press the any key to finish.")
-			sys.exit(1)
-
+			#print "Usage:\n%s [ip] [port]" % sys.argv[0]
+			#raw_input("Press the any key to finish.")
+			#sys.exit(1)
+			
 		# Check if ip is in ipv4 format or ipv6 format
 		ipv4 = False
 		if '.' in server_info[0]: #this works, screw regex
@@ -203,5 +201,9 @@ class Player:
 
 if __name__ == "__main__":
 	client = Player()
-	curses.wrapper(client.run)
-	#client.run()
+	try:
+		# requires curses, you can get it at http://www.lfd.uci.edu/~gohlke/pythonlibs/#curses
+		import curses		
+		curses.wrapper(client.run)
+	except ImportError:
+		client.run()

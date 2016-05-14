@@ -1,6 +1,9 @@
 import json
 import time
+import random
 import threading
+
+from filelock import FileLock
 
 class BucketGame:
 	def __init__(self, settingFile):
@@ -8,7 +11,7 @@ class BucketGame:
 			self._settings = json.load(f)        
 
 		self.players = {}
-		self.buckets = [Bucket() for n in range(self._settings['num_buckets'])]
+		self.buckets = [Bucket(n) for n in range(self._settings['num_buckets'])]
 		self.house = 0
 		self.ticketLock = threading.Lock()
 		self.alive = threading.Event()
@@ -34,9 +37,12 @@ class BucketGame:
 		state = {}
 		state['time'] = self.getTimeLeft()
 		state['buckets'] = self.getBuckets()
-		if playerID in self.players:
-			player = self.players[playerID]
-			state['tickets'] = player.getTickets()
+		if playerID not in self.players:
+			playerID = random.random()
+			self.newPlayer(playerID)
+		player = self.players[playerID]
+		state['tickets'] = player.getTickets()
+		state['mybuckets'] = player.getBuckets()
 		
 	def startRound(self):
 		for b in self.buckets:
@@ -115,11 +121,15 @@ class Player:
 		self.playerID = playerID
 		self.tickets = startTickets
 		self.depositedTickets = set([])
+		self.buckets = {}
 		
 		self.ticketLock = threading.Lock()
 		
 	def getTickets(self):
 		return int(self.tickets)
+	
+	def getBuckets(self):
+		return self.buckets
 		
 	def depositTickets(self, bucket, numTickets = 1):
 		numTickets = int(numTickets)
@@ -127,23 +137,27 @@ class Player:
 		if self.tickets >= numTickets:
 			newTicket = Ticket(self)
 			if bucket.addTicket(newTicket) == newTicket:
-				self.depositedTickets.add(newTicket)
-				
-			with self.ticketLock:
-				self.tickets -= numTickets
+				with self.ticketLock:
+					self.depositedTickets.add(newTicket)
+					if bucket.bucketID not in self.buckets:
+						self.buckets[bucket.bucketID] = 0
+					self.buckets[bucket.bucketID] += numTickets
+					self.tickets -= numTickets
 			return numTickets
 		return 0
 	
 	def collect(self, ticket, winnings):
 		if ticket in self.depositedTickets:
-			self.depositedTickets.remove(ticket)
 			with self.ticketLock:
+				self.depositedTickets.remove(ticket)
 				self.tickets += winnings
 			return winnings
 		return 0
 		
 	def endRound(self):
-		self.depositedTickets.clear()
+		with self.ticketLock:
+			self.depositedTickets.clear()
+			self.buckets.clear()
 		
 	def __hash__(self):
 		return hash(self.playerID)
@@ -166,7 +180,8 @@ class Ticket:
 		return int(self.number * 2**32)
 
 class Bucket:
-	def __init__(self):
+	def __init__(self, bucketID):
+		self.bucketID = bucketID
 		self.tickets = set([])
 		self.ticketLock = threading.Lock()
 		self.available = threading.Event()

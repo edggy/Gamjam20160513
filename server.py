@@ -192,6 +192,7 @@ class GameServer:
 		server_address = (self._settings['address'], int(self._settings['port']))
 		self.sock.bind(server_address)
 		self.sock.listen(5)
+		self.log('Server is listening on %s:%d' % server_address,1)
 
 		# Start looking for connections
 		# self._sock.listen(self._settings['listen_queue_length'])
