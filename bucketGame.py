@@ -11,6 +11,7 @@ class BucketGame:
 		self.buckets = [Bucket() for n in range(self._settings['num_buckets'])]
 		self.house = 0
 		self.ticketLock = threading.Lock()
+		self.alive = threading.Event()
 		
 		self.now = time.time
 
@@ -71,6 +72,21 @@ class BucketGame:
 					self.house -= collected
 				
 		self.log('House:\t%s tickets' % (self.house), 5)
+		
+	def doRounds(self):
+		while self.alive.isSet():
+			self.startRound()
+			time.sleep(int(self._settings['round_time']))
+			self.endRound()	
+			
+	def start(self):
+		self.alive.set()
+		self.roundThread = threading.Thread(target=self.doRound ,args=())
+		self.roundThread.start()
+		
+	def stop(self):
+		self.alive.clear()
+		self.roundThread.join()
 		
 	def report(self, msg):
 		# This function is too complicated to properly comment
